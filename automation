@@ -1,0 +1,265 @@
+#automations
+#paste this in the bottom of your automation.yaml
+
+
+- id: '1760488475527'
+  alias: Z906 - Input change
+  description: Z906 - Input change
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_select.z906_input_select
+    from:
+    to:
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_select.z906_input_select
+        state: Input 1
+      sequence:
+      - action: rest_command.z906_input_1
+        data: {}
+        response_variable: success
+    - conditions:
+      - condition: state
+        entity_id: input_select.z906_input_select
+        state: Input 2
+      sequence:
+      - action: rest_command.z906_input_2
+        data: {}
+        response_variable: success
+    - conditions:
+      - condition: state
+        entity_id: input_select.z906_input_select
+        state: Input 3
+      sequence:
+      - action: rest_command.z906_input_3
+        data: {}
+        response_variable: success
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 1
+          milliseconds: 0
+      - action: input_select.select_option
+        entity_id: input_select.z906_effect
+        data:
+          option: '4.1'
+    - conditions:
+      - condition: state
+        entity_id: input_select.z906_input_select
+        state: Input 4
+      sequence:
+      - action: rest_command.z906_input_4
+        data: {}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 1
+          milliseconds: 0
+      - action: input_select.select_option
+        entity_id: input_select.z906_effect
+        data:
+          option: 'False'
+    - conditions:
+      - condition: state
+        entity_id: input_select.z906_input_select
+        state: Input 5
+      sequence:
+      - action: rest_command.z906_input_5
+        data: {}
+  mode: single
+- id: '1760749638291'
+  alias: z906 polling
+  description: z906 status sensor polling only when states are changhing
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.z906_power
+    - switch.z906_power
+    to: 'on'
+  - trigger: state
+    entity_id:
+    - input_boolean.z906_decode_mode
+  - trigger: state
+    entity_id:
+    - number.z906_volume_sub_index
+    - number.z906_volume_center_index
+    - number.z906_volume_index
+    - number.z906_volume_rear_index
+    - input_select.z906_effect
+    - input_select.z906_input_select
+#trigger on main volume changes
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_main_set
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_main_up
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_main_down
+#trigger on sub volume changes
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_sub_set
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_sub_up
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_sub_down
+#trigger on center volume changes
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_center_set
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_center_up
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_center_down
+#trigger on rear volume changes
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_rear_set
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_rear_up
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_rear_down
+  conditions: []
+  actions:
+  - action: homeassistant.update_entity
+    metadata: {}
+    data:
+      entity_id:
+      - sensor.z906_status
+  mode: single
+- id: z906_apply_effect_on_change
+  alias: 'Z906: apply selected effect'
+  triggers:
+  - entity_id:
+    - input_select.z906_effect
+    trigger: state
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_select.z906_effect
+        state: 3D
+      sequence:
+      - action: rest_command.z906_input_effect_3d
+    - conditions:
+      - condition: state
+        entity_id: input_select.z906_effect
+        state: '4.1'
+      sequence:
+      - action: rest_command.z906_input_effect_4_1
+    - conditions:
+      - condition: state
+        entity_id: input_select.z906_effect
+        state: '2.1'
+      sequence:
+      - action: rest_command.z906_input_effect_2_1
+    - conditions:
+      - condition: state
+        entity_id: input_select.z906_effect
+        state: 'False'
+      sequence:
+      - action: rest_command.z906_input_effect_off
+  mode: single
+- id: z906_decode_mode_toggle
+  alias: 'Z906: toggle decode mode'
+  trigger:
+  - platform: state
+    entity_id: input_boolean.z906_decode_mode
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.z906_decode_mode
+        state: 'on'
+      sequence:
+      - service: rest_command.z906_input_decode_on
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.z906_decode_mode
+        state: 'off'
+      sequence:
+      - service: rest_command.z906_input_decode_off
+  mode: single
+- id: z906_mute_toggle
+  alias: 'Z906: toggle mute'
+  trigger:
+  - platform: state
+    entity_id: input_boolean.z906_mute
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.z906_mute
+        state: 'on'
+      sequence:
+      - service: rest_command.z906_mute_on
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.z906_mute
+        state: 'off'
+      sequence:
+      - service: rest_command.z906_mute_off
+  mode: single
+
+#######
+#optional
+- id: z906_sync_tv_volume
+  alias: 'Z906: sync from TV volume'
+  description: Map Android TV volume to Z906
+  triggers:
+  - entity_id:
+    - media_player.sony_2 #android tv integration is faster then sony provided integration
+    attribute: volume_level
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.z906_power
+    state: 'on'
+  actions:
+  - action: rest_command.z906_volume_main_set
+    data:
+      value: '{{ (state_attr("media_player.sony_2", "volume_level") * 255) | round(0)  # for this to work your "volume_level"  must be in the 0-1 range (0=0; 0.1=10; 1=100) if not chenge the math accordingly
+        }}'
+  - action: homeassistant.update_entity
+    metadata: {}
+    data:
+      entity_id:
+      - sensor.z906_status
+  mode: queued
+  max: 10

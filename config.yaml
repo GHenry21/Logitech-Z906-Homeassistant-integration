@@ -1,0 +1,243 @@
+input_select:
+#Z906 input
+  z906_input_select:
+    name: "Z906 Input Source"
+    options:
+      - Input 1 #TRS 5.1
+      - Input 2 #RCA
+      - Input 3 #SPDIF1
+      - Input 4 #SPDIF2
+      - Input 5 #COAX
+    initial: Input 3 #change with whatver number you want
+    icon: mdi:tune
+  z906_effect:
+    name: "Z906 Effect"
+    options:
+      - False #for off effect
+      - 3D
+      - 4.1
+      - 2.1
+    initial: 4.1 #change with whatver you want
+    icon: mdi:tune-variant
+
+input_boolean:
+  z906_decode_mode:
+    name: "Z906 Decode Mode"
+    initial: off
+    icon: mdi:surround-sound
+  z906_mute:
+    name: "Z906 Mute"
+    initial: off
+    icon: mdi:volume-mute
+
+
+template: #to convert 0-255 values in 0-43
+#volumes x z906 integration
+  - number:
+  #Main Volume Index Number - updated every time the main volume sensor is updated
+      - name: "Z906 Volume MainIndex"
+        unique_id: z906_vol_main_index
+        min: 0
+        max: 42 
+        step: 1
+        optimistic: true
+        # state: z906 accept number 0-255 but the volume actually chages only every 6 number so --> 0 for raw 0-5, 1 for 6-11, 2 for 12-17, ...
+        state: "{{ state_attr('sensor.z906_status', 'main_level') | int(15) }}" #volume default to 15
+        # when user set N this sned N*6 so it's in the 0-255 range 
+        set_value:
+          service: rest_command.z906_volume_main_set
+          data:
+            value: "{{ (value | int * 6) }}"
+  #same thing for other channel:
+  #Sub Volume Index Number - updated arbitrarily to avoid frequent polling since is adjusted less often
+      - name: "Z906 Volume Sub Index"
+        unique_id: z906_vol_sub_index
+        min: 0
+        max: 42
+        step: 1
+        optimistic: true
+        state: "{{ state_attr('sensor.z906_status', 'sub_level') | int(15) }}"
+        set_value:
+          service: rest_command.z906_volume_sub_set
+          data:
+            value: "{{ (value | int * 6) }}"
+  # #Center Volume Index Number - updated arbitrarily to avoid frequent polling since is adjusted less often
+      - name: "Z906 Volume Center Index"
+        unique_id: z906_vol_center_index
+        min: 0
+        max: 42
+        step: 1
+        optimistic: true
+        state: "{{ state_attr('sensor.z906_status', 'center_level') | int(15) }}"
+        set_value:
+          service: rest_command.z906_volume_center_set
+          data:
+            value: "{{ (value | int * 6) }}"
+  # #Rear Volume Index Number - updated arbitrarily to avoid frequent polling since is adjusted less often
+      - name: "Z906 Volume Rear Index"
+        unique_id: z906_vol_rear_index
+        min: 0
+        max: 42
+        step: 1
+        optimistic: true
+        state: "{{ state_attr('sensor.z906_status', 'rear_level') | int(10) }}"
+        set_value:
+          service: rest_command.z906_volume_rear_set
+          data:
+            value: "{{ (value | int * 6) }}"
+
+rest: #sensors
+#z906 nforay status sensors
+ - resource: "http://192.168.88.30/status"
+   scan_interval: 86400 #once every 24 hours, hgih frequency polling not needed, will be forced by automation; high frequency polling of /status causes d1mini to crash or reboot
+   sensor:
+      - name: "Z906 Status"
+        unique_id: z906_status
+        value_template: "{{ value_json.status }}"
+        json_attributes_path: "$.data"
+        json_attributes:
+          - main_level
+          - center_level
+          - rear_level
+          - sub_level
+          - current_input
+          - current_fx
+          - muted
+          - decode_mode
+          - fx_input_1
+          - fx_input_2
+          - fx_input_3
+          - fx_input_4
+          - fx_input_5
+          - fx_input_aux
+          - spdif_status
+          - signal_status
+          - stby
+          - auto_stby
+#power sensor        
+ - resource: "http://192.168.88.30/power"
+   scan_interval: 3 #update every 3 seconds
+   binary_sensor:
+     - name: "Z906 Power"
+       unique_id: z906_power
+       value_template: "{{ value_json.value }}"
+       device_class: power
+
+rest_command:
+#from now on replace with your ip
+  z906_update_status:
+    url: "http://192.168.88.30/status"
+    method: GET
+    headers:
+      Accept: application/json
+#power commands
+  z906_power_on:
+    url: "http://192.168.88.30/power/on"
+    method: GET
+  z906_power_off:
+    url: "http://192.168.88.30/power/off"
+    method: GET
+#input commands   
+  z906_input_1: #TRS 5.1 input
+    url: "http://192.168.88.30/input/0"
+    method: GET
+  z906_input_2: #RCA
+    url: "http://192.168.88.30/input/1"
+    method: GET
+  z906_input_3: #spdif1
+    url: "http://192.168.88.30/input/2"
+    method: GET
+  z906_input_4: #spdif2
+    url: "http://192.168.88.30/input/3"
+    method: GET
+  z906_input_5: #COAX
+    url: "http://192.168.88.30/input/4"
+    method: GET
+  z906_input_aux: #TRS 2.0 console input
+    url: "http://192.168.88.30/input/5"
+    method: GET
+#main volume commands
+  z906_volume_main_set:
+    url: "http://192.168.88.30/volume/main/set?value={{ value }}"
+    method: GET
+ #main volume +
+  z906_volume_main_up:
+    url: "http://192.168.88.30/volume/main/up"
+    method: GET
+ #main volume -
+  z906_volume_main_down:
+    url: "http://192.168.88.30/volume/main/down"
+    method: GET
+#sub volume commands
+  z906_volume_sub_set:
+    url: "http://192.168.88.30/volume/sub/set?value={{ value }}"
+    method: GET
+  #sub volume +
+  z906_volume_sub_up:
+    url: "http://192.168.88.30/volume/sub/up"
+    method: GET
+  #sub volume -
+  z906_volume_sub_down:
+    url: "http://192.168.88.30/volume/sub/down"
+    method: GET
+#center volume commands
+  z906_volume_center_set:
+    url: "http://192.168.88.30/volume/center/set?value={{ value }}"
+    method: GET
+  #center volume +
+  z906_volume_center_up:
+    url: "http://192.168.88.30/volume/center/up"
+    method: GET
+  #center volume -
+  z906_volume_center_down:
+    url: "http://192.168.88.30/volume/center/down"
+    method: GET
+#rear volume commands
+  z906_volume_rear_set:
+    url: "http://192.168.88.30/volume/rear/set?value={{ value }}"
+    method: GET
+  #rear volume +
+  z906_volume_rear_up:
+    url: "http://192.168.88.30/volume/rear/up"
+    method: GET
+  #rear volume -
+  z906_volume_rear_down:
+    url: "http://192.168.88.30/volume/rear/down"
+    method: GET
+#effects
+  z906_input_decode_on:
+    url: "http://192.168.88.30/input/decode/on"
+    method: GET
+  z906_input_decode_off:
+    url: "http://192.168.88.30/input/decode/off"
+    method: GET
+  z906_input_effect_3d:
+    url: "http://192.168.88.30/input/effect/0"
+    method: GET
+  z906_input_effect_4_1:
+    url: "http://192.168.88.30/input/effect/2"
+    method: GET
+  z906_input_effect_2_1:
+    url: "http://192.168.88.30/input/effect/1"
+    method: GET
+  z906_input_effect_off:
+    url: "http://192.168.88.30/input/effect/3"
+    method: GET
+  z906_mute_on:
+    url: "http://192.168.88.30/mute/on"
+    method: GET
+  z906_mute_off:
+    url: "http://192.168.88.30/mute/off"
+    method: GET
+
+
+switch: #for power switch highlighted to reflect the staus
+  - platform: template
+    switches:
+      z906_power:
+        friendly_name: "Z906 Power"
+        value_template: "{{ states('binary_sensor.z906_power') }}"
+        turn_on:
+          service: rest_command.z906_power_on
+        turn_off:
+          service: rest_command.z906_power_off

@@ -1,0 +1,89 @@
+ ##When you power on, change volume, change input or effects force ha to pool /status wich update the sensors
+
+alias: z906 polling
+description: z906 status sensor polling only when states are changhing #(because polling multiple times /status make the esp crash or not respond)
+triggers:
+  - trigger: state
+    entity_id:
+      - binary_sensor.z906_power
+      - switch.z906_power
+    to: "on"
+  - trigger: state
+    entity_id:
+      - input_boolean.z906_decode_mode
+  - trigger: state
+    entity_id:
+      - number.z906_volume_sub_index
+      - number.z906_volume_center_index
+      - number.z906_volume_index
+      - number.z906_volume_rear_index
+      - input_select.z906_effect
+      - input_select.z906_input_select
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_main_set
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_main_up
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_main_down
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_sub_set
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_sub_up
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_sub_down
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_center_set
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_center_up
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_center_down
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_rear_set
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_rear_up
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: rest_command
+      service: z906_volume_rear_down
+conditions: []
+actions:
+  - action: homeassistant.update_entity
+    metadata: {}
+    data:
+      entity_id:
+        - sensor.z906_status
+mode: single

@@ -1,0 +1,21 @@
+ #this is for apply decode when pressing the dedicated button
+
+alias: "Z906: toggle decode mode"
+mode: single
+triggers:
+  - entity_id: input_boolean.z906_decode_mode
+    trigger: state
+actions:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: input_boolean.z906_decode_mode
+            state: "on"
+        sequence:
+          - action: rest_command.z906_input_decode_on
+      - conditions:
+          - condition: state
+            entity_id: input_boolean.z906_decode_mode
+            state: "off"
+        sequence:
+          - action: rest_command.z906_input_decode_off

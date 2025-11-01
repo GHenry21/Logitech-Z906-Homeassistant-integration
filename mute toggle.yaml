@@ -1,0 +1,21 @@
+#this automation is for applying mute when pressing the mute button
+
+alias: "Z906: toggle mute"
+mode: single
+triggers:
+  - entity_id: input_boolean.z906_mute
+    trigger: state
+actions:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: input_boolean.z906_mute
+            state: "on"
+        sequence:
+          - action: rest_command.z906_mute_on
+      - conditions:
+          - condition: state
+            entity_id: input_boolean.z906_mute
+            state: "off"
+        sequence:
+          - action: rest_command.z906_mute_off

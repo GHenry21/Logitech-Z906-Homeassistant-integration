@@ -1,0 +1,26 @@
+#optional if you want the syncronize dolby and tv and change the volume directly from the tv
+
+alias: "Z906: sync from TV volume"
+description: Map Android TV volume to Z906
+triggers:
+  - entity_id:
+      - media_player.sony_2 #in my case android tv integration works faster then bravia native ones
+    attribute: volume_level
+    trigger: state
+conditions:
+  - condition: state
+    entity_id: binary_sensor.z906_power
+    state: "on"
+actions:
+  - action: rest_command.z906_volume_main_set
+    data:
+      value: >-
+        {{ (state_attr("media_player.sony_2", "volume_level") * 255) | round(0)
+        }}
+  - action: homeassistant.update_entity
+    metadata: {}
+    data:
+      entity_id:
+        - sensor.z906_status
+mode: queued
+max: 10

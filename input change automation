@@ -1,0 +1,68 @@
+alias: Z906 input change
+description: Z906 input change
+triggers:
+  - trigger: state
+    entity_id:
+      - input_select.z906_input_select
+    from: null
+    to: null
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: input_select.z906_input_select
+            state: Input 1
+        sequence:
+          - action: rest_command.z906_input_1
+            data: {}
+            response_variable: success
+      - conditions:
+          - condition: state
+            entity_id: input_select.z906_input_select
+            state: Input 2
+        sequence:
+          - action: rest_command.z906_input_2
+            data: {}
+            response_variable: success
+      - conditions:
+          - condition: state
+            entity_id: input_select.z906_input_select
+            state: Input 3
+        sequence:
+          - action: rest_command.z906_input_3
+            data: {}  
+            response_variable: success
+          - delay:  #(opzional) if you want specific effects on specific input
+              hours: 0
+              minutes: 0
+              seconds: 1
+              milliseconds: 0
+          - action: input_select.select_option  #(opzional) if you want specific effects on specific input
+            entity_id: input_select.z906_effect
+            data:
+              option: "4.1"
+      - conditions:
+          - condition: state
+            entity_id: input_select.z906_input_select
+            state: Input 4
+        sequence:
+          - action: rest_command.z906_input_4
+            data: {}
+          - delay: #(opzional) if you want specific effects on specific input
+              hours: 0
+              minutes: 0
+              seconds: 1
+              milliseconds: 0
+          - action: input_select.select_option #(opzional) if you want specific effects on specific input
+            entity_id: input_select.z906_effect
+            data:
+              option: "False"
+      - conditions:
+          - condition: state
+            entity_id: input_select.z906_input_select
+            state: Input 5
+        sequence:
+          - action: rest_command.z906_input_5
+            data: {}
+mode: single

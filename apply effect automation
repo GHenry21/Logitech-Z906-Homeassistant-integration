@@ -1,0 +1,34 @@
+#automation for applying selected effects when pressing the button or selecting it from the menù
+
+alias: "Z906: apply selected effect"
+triggers:
+  - entity_id:
+      - input_select.z906_effect
+    trigger: state
+actions:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: input_select.z906_effect
+            state: 3D
+        sequence:
+          - action: rest_command.z906_input_effect_3d
+      - conditions:
+          - condition: state
+            entity_id: input_select.z906_effect
+            state: "4.1"
+        sequence:
+          - action: rest_command.z906_input_effect_4_1
+      - conditions:
+          - condition: state
+            entity_id: input_select.z906_effect
+            state: "2.1"
+        sequence:
+          - action: rest_command.z906_input_effect_2_1
+      - conditions:
+          - condition: state
+            entity_id: input_select.z906_effect
+            state: "False"
+        sequence:
+          - action: rest_command.z906_input_effect_off
+mode: single

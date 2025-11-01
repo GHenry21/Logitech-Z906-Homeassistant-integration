@@ -18,6 +18,10 @@ The integration relies on the [Z906Remote API by nforay](https://github.com/nfor
 
 ---
 
+<img width="1612" height="706" alt="immagine" src="https://github.com/user-attachments/assets/c5ba4899-1a58-4c59-a60d-b6510d201c18" />
+
+
+
 ## 🧩 Features
 
 - Power ON/OFF directly from Home Assistant  
@@ -41,10 +45,10 @@ The integration relies on the [Z906Remote API by nforay](https://github.com/nfor
 
 ## 🚀 Installation
 
-1. Copy the content of config.yaml and paste it in the right places of your config.yaml
-2. Adjust the IP of your Z906Remote instance inside the `.yaml` file
-3. Paste the content of automation.yaml and add it at the bottom of your
+1. Copy the content of config.yaml and paste it in the right places of your 'config.yaml' file 
+2. Adjust the IP of your Z906Remote instance inside the `config.yaml` file
+3. Create thre required automation copying from mine. 
 4. Reload your configuration or restart Home Assistant
-5. (Optional) Import the included Lovelace dashboard (`z906-dashboard.yaml`)  
+5. (Optional) Import the included Lovelace dashboard (`z906-dashboard.yaml`)
 
 That’s it! Your Z906 should now appear as controllable entities within Home Assistant.
